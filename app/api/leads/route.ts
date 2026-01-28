@@ -1,15 +1,8 @@
-// app/api/leads/route.ts
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-// Evita múltiplas instâncias do Prisma em dev
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient }
-const prisma = globalForPrisma.prisma || new PrismaClient()
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+import { prisma } from '@/lib/prisma' 
 
 export async function POST(request: Request) {
   try {
-    // Em vez de .json(), usamos .formData() para lidar com arquivos
     const formData = await request.formData()
     
     const name = formData.get('name') as string
@@ -17,7 +10,7 @@ export async function POST(request: Request) {
     const phone = formData.get('phone') as string
     const file = formData.get('paymentProof') as File | null
 
-    // Validação do Passo 1
+    // Validação dos campos obrigatórios
     if (!name || !email || !phone) {
       return NextResponse.json(
         { error: 'Campos obrigatórios (Nome, Email, Telefone) estão faltando.' }, 
@@ -27,25 +20,21 @@ export async function POST(request: Request) {
 
     let paymentProofUrl = null
 
-    // Lógica de "Upload" do Arquivo (Passo 2)
+    // Lógica de "Upload" do Arquivo
     if (file && file.size > 0) {
-       // --- ÁREA DE UPLOAD REAL (Ex: AWS S3 / Vercel Blob) ---
-       // const blob = await put(file.name, file, { access: 'public' });
-       // paymentProofUrl = blob.url;
-       
        // --- SIMULAÇÃO PARA FUNCIONAR LOCALMENTE ---
+       // Em produção, substitua isso pelo upload real (S3, Vercel Blob, etc.)
        console.log('Arquivo recebido:', file.name, file.type, file.size)
-       // Salvamos apenas uma string simulando que o upload ocorreu
        paymentProofUrl = `/uploads/simulated/${Date.now()}-${file.name}`
     }
 
-    // Criação ou Atualização (Upsert)
-    // Se o email já existe, atualizamos o comprovativo se enviado agora.
+    // Criação ou Atualização (Upsert) usando a instância global do prisma
     const lead = await prisma.lead.upsert({
         where: { email },
         update: {
             name,
             phone,
+            // Só atualiza o status se houver um novo comprovativo
             ...(paymentProofUrl ? { paymentProofUrl, status: 'AGUARDANDO_VALIDACAO' } : {})
         },
         create: {
