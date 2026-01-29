@@ -27,3 +27,19 @@ model Admin {
   username String @unique
   password String
 }
+
+// Adicione isto ao seu arquivo schema.prisma existente
+
+model Batch {
+  id          String   @id @default(cuid())
+  name        String   // Ex: "Lote 1 (VIP)"
+  price       Float    // Preço Base (Ex: 175000)
+  discount    Int      // Porcentagem de desconto (Ex: 50)
+  slots       Int      // Vagas disponíveis
+  isActive    Boolean  @default(true)
+  isFeatured  Boolean  @default(false) // Se é o destaque (Lote 1)
+  order       Int      @default(0)     // Para ordenar na tela (3, 2, 1)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

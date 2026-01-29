@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react' // 1. Importar useEffect
 import { X, UploadCloud, CheckCircle, ArrowRight, Loader2, AlertCircle } from 'lucide-react'
 
 interface RegistrationModalProps {
@@ -18,6 +18,24 @@ export default function RegistrationModal({ isOpen, onClose }: RegistrationModal
   const [formDataState, setFormDataState] = useState({ name: '', email: '', phone: '' })
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [fileName, setFileName] = useState<string | null>(null)
+
+  // 2. Efeito para resetar o modal sempre que ele for fechado
+  useEffect(() => {
+    if (!isOpen) {
+      // Pequeno delay para evitar que o usuário veja o reset acontecendo enquanto o modal fecha
+      const timer = setTimeout(() => {
+        setStep(1)
+        setSuccess(false)
+        setError('')
+        setLoading(false)
+        setFormDataState({ name: '', email: '', phone: '' })
+        setFileName(null)
+        if (fileInputRef.current) fileInputRef.current.value = ''
+      }, 300)
+
+      return () => clearTimeout(timer)
+    }
+  }, [isOpen])
 
   if (!isOpen) return null
 
@@ -146,6 +164,7 @@ export default function RegistrationModal({ isOpen, onClose }: RegistrationModal
         <p className="text-slate-600 mb-6">
             Seus dados e comprovativo foram enviados com sucesso. Nossa equipe validará sua inscrição e entrará em contacto em breve para confirmar sua matrícula.
         </p>
+        {/* O botão fechar chama o onClose, que muda o isOpen para false, disparando o useEffect de reset */}
         <button onClick={onClose} className="bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold py-3 px-8 rounded-lg transition">
             Fechar
         </button>
