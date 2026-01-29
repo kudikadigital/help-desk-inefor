@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: " FORMAÇÃO EM HELP DESK | INEFOR",
-  description: "VOCÊ ESTÁ PRONTO PARA INICIAR UMA CARREIRA EM TECNOLOGIA?",
+  title: "Formação Help Desk | INEFOR",
+  description: "Inicie sua carreira em TI com certificação prática.",
 };
 
 export default function RootLayout({
@@ -28,7 +29,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          {children}
+          <WhatsAppButton />
+        </AuthProvider>
       </body>
     </html>
   );
