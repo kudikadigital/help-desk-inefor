@@ -2,9 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { FileText, Check, X, Loader2, Mail, Phone } from 'lucide-react'
+import { FileText, Check, X, Loader2, Mail, MessageCircle, Phone } from 'lucide-react'
 
-// (Tipo Lead mantido igual...)
 type Lead = {
   id: string
   name: string
@@ -30,22 +29,34 @@ export default function AdminLeadRow({ lead }: { lead: Lead }) {
       if (!response.ok) throw new Error('Falha')
       router.refresh()
     } catch (error) {
-      console.error('Erro ao atualizar.', error)
+      alert('Erro ao atualizar.')
+      console.error(error)
     } finally {
       setLoading(false)
     }
   }
 
-  // Cores "Neon" para o Dark Mode
+  // Função para limpar o número de telefone para o link do WhatsApp
+  const getWhatsAppLink = (phone: string) => {
+    // Remove tudo que não for número
+    let cleanNum = phone.replace(/\D/g, '')
+    // Se o número tiver 9 dígitos (ex: 923123123), adiciona o código de Angola (244)
+    if (cleanNum.length === 9) {
+        cleanNum = '244' + cleanNum
+    }
+    return `https://wa.me/${cleanNum}`
+  }
+
   const statusStyles: Record<string, string> = {
     'NOVO': 'bg-slate-800 text-slate-400 border-slate-700',
-    'AGUARDANDO_VALIDACAO': 'bg-orange-500/10 text-orange-400 border-orange-500/20', // Estilo brilhante
+    'AGUARDANDO_VALIDACAO': 'bg-orange-500/10 text-orange-400 border-orange-500/20',
     'MATRICULADO': 'bg-green-500/10 text-green-400 border-green-500/20',
     'CANCELADO': 'bg-red-500/10 text-red-400 border-red-500/20'
   }
 
   return (
-    <tr className="hover:bg-slate-800/50 transition group">
+    <tr className="hover:bg-slate-800/50 transition group border-b border-slate-800 last:border-0">
+      
       {/* Nome e Data */}
       <td className="px-6 py-4">
         <div className="font-bold text-white mb-0.5">{lead.name}</div>
@@ -54,7 +65,7 @@ export default function AdminLeadRow({ lead }: { lead: Lead }) {
         </div>
       </td>
 
-      {/* Contato com Ícones sutis */}
+      {/* Contato (Visualização) */}
       <td className="px-6 py-4">
         <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2 text-xs text-slate-400">
@@ -82,36 +93,58 @@ export default function AdminLeadRow({ lead }: { lead: Lead }) {
         )}
       </td>
 
-      {/* Status Badge */}
+      {/* Status */}
       <td className="px-6 py-4">
         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${statusStyles[lead.status] || 'bg-slate-800 text-slate-500 border-slate-700'}`}>
           {lead.status.replace('_', ' ')}
         </span>
       </td>
 
-      {/* Ações */}
+      {/* AÇÕES: Aqui adicionamos os botões de contato */}
       <td className="px-6 py-4 text-right">
-        <div className="flex items-center justify-end gap-2 opacity-60 group-hover:opacity-100 transition">
+        <div className="flex items-center justify-end gap-2 opacity-80 group-hover:opacity-100 transition">
             {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin text-slate-500" />
             ) : (
                 <>
-                   {/* Botão Aprovar */}
+                   {/* Grupo de Comunicação */}
+                   <div className="flex items-center mr-2 pr-2 border-r border-slate-700 gap-1">
+                        {/* Botão WhatsApp */}
+                        <a 
+                            href={getWhatsAppLink(lead.phone)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Conversar no WhatsApp"
+                            className="p-2 hover:bg-green-500/20 text-slate-500 hover:text-green-400 rounded-lg transition"
+                        >
+                            <MessageCircle className="w-4 h-4" />
+                        </a>
+
+                        {/* Botão E-mail */}
+                        <a 
+                            href={`mailto:${lead.email}`}
+                            title="Enviar E-mail"
+                            className="p-2 hover:bg-blue-500/20 text-slate-500 hover:text-blue-400 rounded-lg transition"
+                        >
+                            <Mail className="w-4 h-4" />
+                        </a>
+                   </div>
+
+                   {/* Grupo de Gestão (Aprovar/Rejeitar) */}
                    {lead.status !== 'MATRICULADO' && (
                         <button 
                             onClick={() => handleStatusChange('MATRICULADO')}
-                            title="Confirmar"
+                            title="Confirmar Matrícula"
                             className="p-2 bg-green-900/20 hover:bg-green-500/20 text-green-600 hover:text-green-400 rounded-lg transition border border-transparent hover:border-green-500/30"
                         >
                             <Check className="w-4 h-4" />
                         </button>
                    )}
                    
-                   {/* Botão Cancelar */}
                    {lead.status !== 'CANCELADO' && (
                         <button 
                              onClick={() => handleStatusChange('CANCELADO')}
-                             title="Rejeitar"
+                             title="Rejeitar/Cancelar"
                              className="p-2 bg-red-900/20 hover:bg-red-500/20 text-red-600 hover:text-red-400 rounded-lg transition border border-transparent hover:border-red-500/30"
                         >
                             <X className="w-4 h-4" />
