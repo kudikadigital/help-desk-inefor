@@ -30,7 +30,7 @@ export default function AdminLeadRow({ lead }: { lead: Lead }) {
       if (!response.ok) throw new Error('Falha')
       router.refresh()
     } catch (error) {
-      alert('Erro ao atualizar.')
+      console.error('Erro ao atualizar.', error)
     } finally {
       setLoading(false)
     }

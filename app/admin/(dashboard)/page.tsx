@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import AdminLeadRow from '@/components/AdminLeadRow'
-import { Users, DollarSign, Clock, CheckCircle2, Search } from 'lucide-react'
+import { Users, DollarSign, Clock, CheckCircle2 } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,7 +29,7 @@ export default async function AdminDashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         
         {/* Card 1: Receita (Gradiente) */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 to-blue-900 p-6 shadow-2xl shadow-blue-900/20 group">
+        <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-blue-600 to-blue-900 p-6 shadow-2xl shadow-blue-900/20 group">
             <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition"></div>
             <div className="flex items-center gap-4 mb-4">
                 <div className="p-3 bg-white/10 rounded-xl backdrop-blur-sm">
