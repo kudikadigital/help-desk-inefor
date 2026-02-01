@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Users, Settings, LogOut, Shield } from 'lucide-react'
+import { LayoutDashboard, Users, Settings, Shield } from 'lucide-react'
+import LogoutBtn from './Logout'
 
 const menuItems = [
   { name: 'Visão Geral', icon: LayoutDashboard, href: '/admin' },
@@ -48,10 +49,7 @@ export default function AdminSidebar() {
 
       {/* Footer / Logout */}
       <div className="p-4 border-t border-slate-800 bg-slate-950/30">
-        <button className="flex items-center gap-3 w-full px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition">
-          <LogOut className="w-5 h-5" />
-          Sair do Sistema
-        </button>
+        <LogoutBtn />
       </div>
     </aside>
   )

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Save, Loader2 } from 'lucide-react'
 import { Batch } from '@prisma/client'
-import { updateBatch } from '@/app/admin/settings/actions'
+import { updateBatch } from '@/app/admin/(dashboard)/settings/actions'
 
 export default function BatchForm({ batch }: { batch: Batch }) {
     const [loading, setLoading] = useState(false)

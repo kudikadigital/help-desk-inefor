@@ -25,7 +25,7 @@ export default function AdminLogin() {
       });
 
       if (response.ok) {
-        router.push("/admin/dashboard");
+        router.push("/admin/");
       } else {
         const data = await response.json();
         setError(data.error || "Acesso negado.");
