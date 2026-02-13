@@ -35,9 +35,11 @@ export function Investiment({ openModal, batches }: InvestimentProps) {
             const finalPrice = calculatePrice(batch.price, batch.discount);
             const isFeatured = batch.isFeatured;
             
-            // Simulação de vagas preenchidas para a barra de progresso (Inverso dos slots restantes)
-            // Assumindo base 100 para visualização
-            const progress = Math.min(100, Math.max(10, 100 - batch.slots)); 
+            // Lógica de bloqueio: Se não é o destaque (Lote 1), fica bloqueado aguardando
+            const isLocked = !isFeatured;
+
+            // Progresso é 0 se estiver bloqueado
+            const progress = isLocked ? 0 : Math.min(100, Math.max(10, 100 - batch.slots)); 
 
             return (
                 <div 
@@ -46,13 +48,13 @@ export function Investiment({ openModal, batches }: InvestimentProps) {
                         relative rounded-3xl p-8 transition-all duration-300 flex flex-col h-full
                         ${isFeatured 
                             ? 'bg-white border-2 border-blue-600 shadow-2xl scale-105 z-10' 
-                            : 'bg-white border border-slate-200 shadow-sm hover:border-blue-300'
+                            : 'bg-white border border-slate-200 shadow-sm'
                         }
                     `}
                 >
                     {/* Badge de Destaque Superior */}
                     {isFeatured && (
-                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-bold uppercase tracking-widest py-1.5 px-4 rounded-full shadow-md">
+                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-bold uppercase tracking-widest py-1.5 px-4 rounded-full shadow-md whitespace-nowrap">
                             Mais Popular
                         </div>
                     )}
@@ -63,6 +65,18 @@ export function Investiment({ openModal, batches }: InvestimentProps) {
                             <Layers className="w-6 h-6" />
                         </div>
                         <h3 className="font-bold text-xl text-slate-800 uppercase tracking-wide">{batch.name}</h3>
+                        
+                        {/* Frases Condicionais de Escassez (Lotes 2 e 3) */}
+                        {batch.name.includes("Lote 2") && (
+                            <p className="text-red-500 text-sm font-medium mt-2">
+                                Quando terminarem as vagas do lote 1!
+                            </p>
+                        )}
+                        {batch.name.includes("Lote 3") && (
+                            <p className="text-red-500 text-sm font-medium mt-2">
+                                Quando terminarem as vagas do lote 2!
+                            </p>
+                        )}
                     </div>
 
                     {/* Preço */}
@@ -78,7 +92,7 @@ export function Investiment({ openModal, batches }: InvestimentProps) {
                         </p>
                     </div>
 
-                    {/* Banner de Desconto Verde (Estilo da Imagem) */}
+                    {/* Banner de Desconto Verde */}
                     <div className="bg-green-500 text-white text-center font-bold text-sm py-2.5 rounded-lg mb-8 flex items-center justify-center gap-2 shadow-sm shadow-green-200">
                         <Zap className="w-4 h-4 fill-current" />
                         DESCONTO DE ATÉ {batch.discount}%
@@ -113,39 +127,39 @@ export function Investiment({ openModal, batches }: InvestimentProps) {
                     {/* Barra de Vagas e Footer */}
                     <div className="mt-auto">
                         <div className="flex justify-between text-xs font-medium text-slate-500 mb-2">
-                            <span>Vagas ocupadas</span>
-                            <span>{batch.slots > 20 ? 'Alta procura' : 'Quase esgotado'}</span>
+                            <span>Vagas ocupadas:</span>
+                            <span>{isLocked ? '0' : 'Alta procura'}</span>
                         </div>
-                        <div className="w-full bg-slate-100 rounded-full h-2.5 mb-2 overflow-hidden">
+                        <div className="w-full bg-slate-200 rounded-full h-2.5 mb-2 overflow-hidden">
                             <div 
-                                className={`h-full rounded-full ${isFeatured ? 'bg-blue-600' : 'bg-slate-400'}`} 
+                                className={`h-full rounded-full ${isFeatured ? 'bg-blue-600' : 'bg-transparent'}`} 
                                 style={{ width: `${progress}%` }}
                             ></div>
                         </div>
                         <p className="text-xs text-right text-slate-400 mb-6">{batch.slots} vagas restantes</p>
 
                         <button 
-                            onClick={openModal}
+                            onClick={isLocked ? undefined : openModal}
+                            disabled={isLocked}
                             className={`
-                                w-full py-4 rounded-xl font-bold text-lg flex justify-center items-center gap-2 transition-all shadow-lg hover:-translate-y-1
+                                w-full py-4 rounded-xl font-bold text-lg flex justify-center items-center gap-2 transition-all 
                                 ${isFeatured 
-                                    ? 'bg-linear-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-orange-500/30' 
-                                    : 'bg-slate-800 hover:bg-slate-900 text-white shadow-slate-900/10'
+                                    ? 'bg-linear-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg shadow-orange-500/30 hover:-translate-y-1 cursor-pointer' 
+                                    : 'bg-slate-300 text-slate-500 cursor-not-allowed'
                                 }
                             `}
                         >
-                            {isFeatured ? 'INSCREVER-SE AGORA' : 'GARANTIR VAGA'}
-                            {isFeatured && <ArrowRight className="w-5 h-5" />}
+                            {isLocked ? (
+                                <>
+                                    <Lock className="w-5 h-5" /> Indisponível
+                                </>
+                            ) : (
+                                <>
+                                    INSCREVER-SE AGORA <ArrowRight className="w-5 h-5" />
+                                </>
+                            )}
                         </button>
                     </div>
-                    
-                    {/* Overlay para Lotes Esgotados (Exemplo Visual se slots == 0) */}
-                    {batch.slots === 0 && (
-                        <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] rounded-3xl flex flex-col items-center justify-center z-20">
-                             <Lock className="w-12 h-12 text-slate-400 mb-2" />
-                             <span className="font-bold text-xl text-slate-600">ESGOTADO</span>
-                        </div>
-                    )}
                 </div>
             )
         })}
