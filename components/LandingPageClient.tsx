@@ -8,7 +8,6 @@ import {
   Calendar,
   Clock,
   MapPin,
-  User,
   ChevronDown,
   ShieldCheck,
   Zap,
@@ -77,7 +76,6 @@ export default function LandingPageClient({ batches }: { batches: Batch[] }) {
               </div>
               <div className="flex items-center gap-2 bg-blue-950/50 border border-blue-800/50 py-3 px-5 rounded-lg backdrop-blur-sm">
                 <MapPin className="w-5 h-5 text-orange-400" /> Presencial
-                (Luanda)
               </div>
             </div>
 

@@ -11,7 +11,7 @@ export function Benefits({ openModal }: { openModal: () => void }) {
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-blue-950 mb-6">Por que escolher o INEFOR?</h2>
             <p className="text-slate-600 text-lg leading-relaxed">
-              Não somos apenas um centro de formação.Somos uma ponte direta entre o conhecimento académico e o mercado de trabalho angolano.
+              Não somos apenas um centro de formação. Somos uma ponte direta entre o conhecimento académico e o mercado de trabalho angolano.
             </p>
           </div>
 
