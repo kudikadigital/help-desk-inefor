@@ -11,7 +11,7 @@ export function Benefits({ openModal }: { openModal: () => void }) {
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-blue-950 mb-6">Por que escolher o INEFOR?</h2>
             <p className="text-slate-600 text-lg leading-relaxed">
-              Não somos apenas um centro de formação. [cite_start]Somos uma ponte direta entre o conhecimento académico e o mercado de trabalho angolano. [cite: 98]
+              Não somos apenas um centro de formação.Somos uma ponte direta entre o conhecimento académico e o mercado de trabalho angolano.
             </p>
           </div>
 
@@ -36,7 +36,7 @@ export function Benefits({ openModal }: { openModal: () => void }) {
         </div>
 
         {/* Card Flutuante Visual */}
-        <div className="relative h-100 bg-slate-200 rounded-2xl overflow-hidden shadow-2xl border-4 border-white hidden lg:block bg-[url('https://images.unsplash.com/photo-1581092921461-eab62e97a782?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center">
+        <div className="relative h-100 bg-slate-200 rounded-2xl overflow-hidden shadow-2xl border-4 border-white hidden lg:block bg-[url('/images/inefor-interns-img.jpg')] bg-cover bg-center">
             <div className="absolute inset-0 bg-linear-to-t from-blue-900/90 to-transparent flex items-end p-8">
                 <div className="text-white">
                     <p className="font-bold text-xl mb-1">Ambiente 100% Prático</p>

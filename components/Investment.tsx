@@ -98,12 +98,12 @@ export function Investiment({ openModal, batches }: InvestimentProps) {
                             <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
                             <span>Material didático incluso</span>
                         </li>
-                        {isFeatured && (
+                        {/* {isFeatured && (
                              <li className="flex gap-3 text-sm text-slate-600 font-medium">
                                 <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
                                 <span>Mentoria de Carreira Exclusiva</span>
                             </li>
-                        )}
+                        )} */}
                          <li className="flex gap-3 text-sm text-slate-600">
                             <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
                             <span>Aulas 100% Presenciais</span>
