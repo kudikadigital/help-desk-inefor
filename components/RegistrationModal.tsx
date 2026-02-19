@@ -131,7 +131,7 @@ export default function RegistrationModal({ isOpen, onClose }: RegistrationModal
     <div className="space-y-6 animate-fadeIn">
         <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 text-sm text-blue-800 flex items-start gap-3">
             <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-            <p>Realize o pagamento para o IBAN <strong>AO06.0000.0000.0000.0000.0</strong> (Banco BIC) e anexe o comprovativo abaixo para garantir sua vaga imediata.</p>
+            <p>Realize o pagamento para o IBAN <strong>AO06.0040.0000.9848.7014.1014.9</strong> (Banco BAI) e anexe o comprovativo abaixo para garantir sua vaga imediata.</p>
         </div>
         
       <div 
