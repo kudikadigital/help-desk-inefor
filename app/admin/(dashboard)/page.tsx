@@ -98,6 +98,7 @@ export default async function AdminDashboardPage() {
             <table className="w-full text-left border-collapse">
                 <thead>
                     <tr className="bg-slate-950/50 text-slate-500 text-xs uppercase tracking-wider font-semibold border-b border-slate-800">
+                        <th className="px-6 py-4">ID</th>
                         <th className="px-6 py-4">Candidato</th>
                         <th className="px-6 py-4">Contacto</th>
                         <th className="px-6 py-4">Comprovativo</th>
@@ -108,7 +109,7 @@ export default async function AdminDashboardPage() {
                 <tbody className="divide-y divide-slate-800">
                     {leads.length === 0 ? (
                         <tr>
-                            <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                            <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
                                 Nenhuma inscrição encontrada.
                             </td>
                         </tr>
