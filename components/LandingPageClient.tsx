@@ -68,7 +68,7 @@ export default function LandingPageClient({ batches }: { batches: Batch[] }) {
             <div className="flex flex-wrap gap-4 text-sm font-bold text-white mb-10">
               <div className="flex items-center gap-2 bg-blue-950/50 border border-blue-800/50 py-3 px-5 rounded-lg backdrop-blur-sm">
                 <Calendar className="w-5 h-5 text-orange-400" /> Início:
-                14/02/2026
+                11/04/2026
               </div>
               <div className="flex items-center gap-2 bg-blue-950/50 border border-blue-800/50 py-3 px-5 rounded-lg backdrop-blur-sm">
                 <Clock className="w-5 h-5 text-orange-400" /> Sábados (08:30 -
