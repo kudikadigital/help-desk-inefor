@@ -53,45 +53,50 @@ export default function RegistrationModal({ isOpen, onClose }: RegistrationModal
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
-    
-    // Validação simples do Passo 1 antes de prosseguir
+
+    // PASSO 1 — Guardar lead na BD imediatamente e avançar
     if (step === 1) {
       if (!formDataState.name || !formDataState.email || !formDataState.phone) {
         setError('Por favor, preencha todos os campos de contacto.')
         return
       }
-      setStep(2) // Vai para o passo do arquivo
+      setLoading(true)
+      try {
+        const leadData = new FormData()
+        leadData.append('name', formDataState.name)
+        leadData.append('email', formDataState.email)
+        leadData.append('phone', formDataState.phone)
+
+        const response = await fetch('/api/leads', { method: 'POST', body: leadData })
+        const result = await response.json()
+        if (!response.ok) throw new Error(result.error || 'Erro ao registar contacto.')
+
+        setStep(2) // Lead guardado — avançar para comprovativo
+      } catch (err: any) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
       return
     }
 
-    // Validação do Passo 2 (Arquivo)
-    if (step === 2 && !fileInputRef.current?.files?.[0]) {
-        setError('Por favor, anexe o comprovativo de pagamento.')
-        return
+    // PASSO 2 — Enviar comprovativo (actualiza o lead via upsert)
+    if (!fileInputRef.current?.files?.[0]) {
+      setError('Por favor, anexe o comprovativo de pagamento.')
+      return
     }
 
-    // Se chegou aqui, estamos no passo 2 e prontos para enviar tudo
     setLoading(true)
-    
     const submitData = new FormData()
     submitData.append('name', formDataState.name)
     submitData.append('email', formDataState.email)
     submitData.append('phone', formDataState.phone)
-    
-    if (fileInputRef.current?.files?.[0]) {
-      submitData.append('paymentProof', fileInputRef.current.files[0])
-    }
+    submitData.append('paymentProof', fileInputRef.current.files[0])
 
     try {
-      const response = await fetch('/api/leads', {
-        method: 'POST',
-        // Nota: Não defina Content-Type header aqui, o navegador define automaticamente para multipart/form-data com o boundary correto
-        body: submitData,
-      })
-
+      const response = await fetch('/api/leads', { method: 'POST', body: submitData })
       const result = await response.json()
       if (!response.ok) throw new Error(result.error || 'Erro ao processar inscrição.')
-
       setSuccess(true)
     } catch (err: any) {
       setError(err.message)
@@ -223,7 +228,7 @@ export default function RegistrationModal({ isOpen, onClose }: RegistrationModal
                             <Loader2 className="w-6 h-6 animate-spin" />
                         ) : (
                           <>
-                             {step === 1 ? 'Continuar para Pagamento' : 'Finalizar Inscrição'}
+                             {step === 1 ? 'Guardar e Continuar' : 'Finalizar Inscrição'}
                              <ArrowRight className="w-5 h-5" />
                           </>
                         )}
