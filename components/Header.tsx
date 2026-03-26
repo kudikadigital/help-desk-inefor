@@ -12,6 +12,20 @@ export default function Header({ onOpenModal }: { onOpenModal: () => void }) {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  const scrollToSection = (href: string, closeMobile = false) => {
+    if (closeMobile) setIsMobileMenuOpen(false)
+    if (href === '#') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+    const el = document.querySelector(href)
+    if (el) {
+      const headerOffset = 80
+      const top = el.getBoundingClientRect().top + window.scrollY - headerOffset
+      window.scrollTo({ top, behavior: 'smooth' })
+    }
+  }
+
   const navLinks = [
     { name: 'Início', href: '#' },
     { name: 'O Curso', href: '#sobre' },
@@ -29,18 +43,26 @@ export default function Header({ onOpenModal }: { onOpenModal: () => void }) {
     >
       <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
         {/* Logo Placeholder */}
-        <div className="text-white font-bold text-2xl tracking-tight">
+        <div
+          onClick={() => scrollToSection('#')}
+          className="text-white font-bold text-2xl tracking-tight cursor-pointer"
+        >
           INEFOR<span className="text-orange-500">.</span>
         </div>
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-8">
           {navLinks.map(link => (
-            <a key={link.name} href={link.href} className="text-blue-100 hover:text-orange-400 transition text-sm font-medium">
+            <a
+              key={link.name}
+              href={link.href}
+              onClick={(e) => { e.preventDefault(); scrollToSection(link.href) }}
+              className="text-blue-100 hover:text-orange-400 transition text-sm font-medium cursor-pointer"
+            >
               {link.name}
             </a>
           ))}
-          <button onClick={onOpenModal} className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-full font-bold transition transform hover:scale-105 text-sm">
+          <button onClick={() => scrollToSection('#investimento')} className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-full font-bold transition transform hover:scale-105 text-sm">
             Inscrever-se Agora
           </button>
         </nav>
@@ -56,11 +78,16 @@ export default function Header({ onOpenModal }: { onOpenModal: () => void }) {
         <div className="md:hidden absolute top-full left-0 w-full bg-blue-900 py-4 px-4 shadow-xl border-t border-blue-800">
            <nav className="flex flex-col gap-4">
             {navLinks.map(link => (
-                <a key={link.name} href={link.href} onClick={() => setIsMobileMenuOpen(false)} className="text-blue-100 block py-2">
+                <a
+                  key={link.name}
+                  href={link.href}
+                  onClick={(e) => { e.preventDefault(); scrollToSection(link.href, true) }}
+                  className="text-blue-100 block py-2 cursor-pointer"
+                >
                   {link.name}
                 </a>
               ))}
-               <button onClick={() => {onOpenModal(); setIsMobileMenuOpen(false)}} className="w-full bg-orange-500 text-white py-3 rounded-lg font-bold">
+               <button onClick={() => scrollToSection('#investimento', true)} className="w-full bg-orange-500 text-white py-3 rounded-lg font-bold">
                 Inscrever-se Agora
               </button>
            </nav>

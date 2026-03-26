@@ -27,6 +27,14 @@ export default function LandingPageClient({ batches }: { batches: Batch[] }) {
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
+  const scrollToInvestimento = () => {
+    const el = document.getElementById('investimento');
+    if (el) {
+      const top = el.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800 overflow-x-hidden">
       <Header onOpenModal={openModal} />
@@ -80,7 +88,7 @@ export default function LandingPageClient({ batches }: { batches: Batch[] }) {
             </div>
 
             <button
-              onClick={openModal}
+              onClick={scrollToInvestimento}
               className="bg-linear-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-5 px-10 rounded-xl transition-all transform hover:-translate-y-1 shadow-lg shadow-orange-500/30 text-lg flex items-center gap-3"
             >
               QUERO GARANTIR MINHA VAGA{" "}
