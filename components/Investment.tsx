@@ -2,7 +2,7 @@ import { ArrowRight, CheckCircle, Zap, Layers, Lock } from "lucide-react";
 import { Batch } from "@prisma/client";
 
 interface InvestimentProps {
-  openModal: () => void;
+  openModal: (batch: Batch) => void;
   batches: Batch[];
 }
 
@@ -164,7 +164,7 @@ export function Investiment({ openModal, batches }: InvestimentProps) {
                 </p>
 
                 <button
-                  onClick={isLocked ? undefined : openModal}
+                  onClick={isLocked ? undefined : () => openModal(batch)}
                   disabled={isLocked}
                   className={`
                                 w-full py-4 rounded-xl font-bold text-lg flex justify-center items-center gap-2 transition-all 

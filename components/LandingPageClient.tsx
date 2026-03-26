@@ -14,31 +14,35 @@ import {
   TrendingUp,
   ChevronUp,
 } from "lucide-react";
-import { Faqs } from "@/components/Faqs";
-import { TargetAudience } from "@/components/TargetAudience";
-import { Benefits } from "@/components/Benefits";
-import { Investiment } from "@/components/Investment";
-import { Batch } from "@prisma/client";
-import { Instructors } from "./Instructors";
+import { Faqs } from "@/components/Faqs"
+import { TargetAudience } from "@/components/TargetAudience"
+import { Benefits } from "@/components/Benefits"
+import { Investiment } from "@/components/Investment"
+import { Batch } from "@prisma/client"
+import { Instructors } from "./Instructors"
 
 export default function LandingPageClient({ batches }: { batches: Batch[] }) {
-  // Estado global para controlar o modal na página
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null)
+
+  const openModal = (batch?: Batch) => {
+    if (batch) setSelectedBatch(batch)
+    setIsModalOpen(true)
+  }
+  const closeModal = () => setIsModalOpen(false)
 
   const scrollToInvestimento = () => {
-    const el = document.getElementById('investimento');
+    const el = document.getElementById('investimento')
     if (el) {
-      const top = el.getBoundingClientRect().top + window.scrollY - 80;
-      window.scrollTo({ top, behavior: 'smooth' });
+      const top = el.getBoundingClientRect().top + window.scrollY - 80
+      window.scrollTo({ top, behavior: 'smooth' })
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800 overflow-x-hidden">
-      <Header onOpenModal={openModal} />
-      <RegistrationModal isOpen={isModalOpen} onClose={closeModal} />
+      <Header onOpenModal={() => openModal()} />
+      <RegistrationModal isOpen={isModalOpen} onClose={closeModal} selectedBatch={selectedBatch} />
 
       {/* --- HERO SECTION IMPACTANTE --- */}
       <section className="relative pt-32 pb-20 lg:pt-44 overflow-hidden">
@@ -234,7 +238,7 @@ export default function LandingPageClient({ batches }: { batches: Batch[] }) {
       </section>
 
       {/* --- PRICING (Cards de Investimento Premium) --- */}
-      <Investiment openModal={openModal} batches={batches} />
+      <Investiment openModal={(batch) => openModal(batch)} batches={batches} />
 
       {/* --- INSTRUTORES (Dark Section Professional) --- */}
      <Instructors />
