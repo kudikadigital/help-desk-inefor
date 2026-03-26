@@ -1,5 +1,19 @@
 import { CheckCircle } from 'lucide-react'
 
+  const scrollToSection = (href: string, closeMobile = false) => {
+    
+    if (href === '#') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+    const el = document.querySelector(href)
+    if (el) {
+      const headerOffset = 80
+      const top = el.getBoundingClientRect().top + window.scrollY - headerOffset
+      window.scrollTo({ top, behavior: 'smooth' })
+    }
+  }
+
 export function Benefits({ openModal }: { openModal: () => void }) {
   return (
     <section className="py-24 px-4 bg-blue-50 relative overflow-hidden">
@@ -30,7 +44,9 @@ export function Benefits({ openModal }: { openModal: () => void }) {
             ))}
           </div>
           
-          <button onClick={openModal} className="bg-blue-900 text-white font-bold py-4 px-8 rounded-lg hover:bg-blue-800 transition shadow-lg hover:-translate-y-1">
+          <button 
+          onClick={() => scrollToSection('#investimento', true)} 
+          className="bg-blue-900 text-white font-bold py-4 px-8 rounded-lg hover:bg-blue-800 transition shadow-lg hover:-translate-y-1">
             Quero fazer parte da elite
           </button>
         </div>

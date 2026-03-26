@@ -98,8 +98,8 @@ export default function RegistrationModal({ isOpen, onClose, selectedBatch }: Re
       const result = await res.json()
       if (!res.ok) throw new Error(result.error || 'Erro ao registar contacto.')
       setStep(2)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: Error | unknown) {
+      setError(err instanceof Error ? err.message : 'Erro ao registar contacto.')
     } finally {
       setLoading(false)
     }

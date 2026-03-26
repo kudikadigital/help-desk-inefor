@@ -39,6 +39,20 @@ export default function LandingPageClient({ batches }: { batches: Batch[] }) {
     }
   }
 
+    const scrollToSection = (href: string, closeMobile = false) => {
+    // if (closeMobile) setIsMobileMenuOpen(false)
+    if (href === '#') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+    const el = document.querySelector(href)
+    if (el) {
+      const headerOffset = 80
+      const top = el.getBoundingClientRect().top + window.scrollY - headerOffset
+      window.scrollTo({ top, behavior: 'smooth' })
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800 overflow-x-hidden">
       <Header onOpenModal={() => openModal()} />
@@ -254,7 +268,7 @@ export default function LandingPageClient({ batches }: { batches: Batch[] }) {
             oportunidade passar.
           </p>
           <button
-            onClick={() => openModal()}
+           onClick={() => scrollToSection('#investimento', true)} 
             className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-12 rounded-full text-lg shadow-xl hover:shadow-2xl transition hover:-translate-y-1"
           >
             Inscrever-se Agora

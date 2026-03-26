@@ -2,20 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { sendWebhookPaidEmail } from '@/lib/brevo'
 
-const COMPANY_NAME = process.env.PAYMENT_COMPANY_NAME || 'INEFOR'
-const NOTIFY_EMAIL = process.env.NOTIFY_EMAIL || 'geral@inefor.ao'
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    console.log('AppyPay webhook received:', JSON.stringify(body, null, 2))
+    console.log('AppyPay Webhook Payload:', JSON.stringify(body, null, 2))
 
-    const merchantTransactionId =
-      body.merchantTransactionId || body.MerchantTransactionId
+    // A AppyPay pode enviar campos com iniciais maiúsculas ou minúsculas
+    const merchantTransactionId = body.merchantTransactionId || body.MerchantTransactionId
     const status = body.status || body.Status
+    const appyId = body.id || body.Id
 
     if (!merchantTransactionId) {
-      return NextResponse.json({ error: 'Missing merchantTransactionId' }, { status: 400 })
+      return NextResponse.json({ error: 'ID da transação não encontrado' }, { status: 400 })
     }
 
     const payment = await prisma.payment.findUnique({
@@ -23,56 +21,57 @@ export async function POST(request: NextRequest) {
     })
 
     if (!payment) {
-      console.warn('Webhook: payment not found for', merchantTransactionId)
-      return NextResponse.json({ received: true })
+      console.error('Webhook: Pagamento não existe no banco:', merchantTransactionId)
+      return NextResponse.json({ received: true }) 
     }
 
-    // Já pago — ignorar duplicados
     if (payment.status === 'paid') {
-      return NextResponse.json({ received: true })
+      return NextResponse.json({ message: 'Já processado' })
     }
 
-    const isPaid =
-      status === 'paid' ||
-      status === 'Paid' ||
-      status === 'Success' ||
-      status === 'PAID'
+    // LISTA DE STATUS POSITIVOS DA APPYPAY
+    const positiveStatus = ['paid', 'Paid', 'PAID', 'success', 'Success', 'SUCCESS', 'completed']
+    const isPaid = positiveStatus.includes(status)
 
     if (isPaid) {
-      // Actualizar pagamento
+      // 1. Atualiza o Pagamento
       await prisma.payment.update({
         where: { merchantTransactionId },
-        data: { status: 'paid', paidAt: new Date() },
+        data: { 
+          status: 'paid', 
+          paidAt: new Date(),
+          // Opcional: guardar o ID da AppyPay que veio no webhook se for diferente
+        },
       })
 
-      // Actualizar lead para MATRICULADO
-      await prisma.lead.updateMany({
+      // 2. Atualiza o Lead
+      await prisma.lead.update({
         where: { email: payment.email },
         data: { status: 'MATRICULADO' },
       })
 
-      // Notificação interna
+      // 3. Notificação (Brevo)
       const brevoApiKey = process.env.BREVO_API_KEY
       if (brevoApiKey) {
-        await sendWebhookPaidEmail(brevoApiKey, {
-          notifyEmail: NOTIFY_EMAIL,
-          companyName: COMPANY_NAME,
+        sendWebhookPaidEmail(brevoApiKey, {
+          notifyEmail: process.env.NOTIFY_EMAIL || 'geral@inefor.ao',
+          companyName: process.env.PAYMENT_COMPANY_NAME || 'INEFOR',
           fullName: payment.fullName,
           email: payment.email,
           courseName: payment.batchName,
           amount: payment.amount,
-        }).catch((e) => console.error('Brevo webhook email error:', e))
+        }).catch(e => console.error('Brevo Webhook Email Error:', e))
       }
+
+      console.log(`✅ Pagamento ${merchantTransactionId} validado com sucesso via Webhook.`)
     } else {
-      await prisma.payment.update({
-        where: { merchantTransactionId },
-        data: { status: 'failed' },
-      })
+      console.log(`⚠️ Webhook recebido para ${merchantTransactionId} com status: ${status}`)
     }
 
     return NextResponse.json({ received: true })
+
   } catch (error) {
-    console.error('Webhook error:', error)
-    return NextResponse.json({ error: 'Webhook error' }, { status: 500 })
+    console.error('Webhook Critical Error:', error)
+    return NextResponse.json({ error: 'Erro interno no Webhook' }, { status: 500 })
   }
 }
