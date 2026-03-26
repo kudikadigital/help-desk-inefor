@@ -254,7 +254,7 @@ export default function LandingPageClient({ batches }: { batches: Batch[] }) {
             oportunidade passar.
           </p>
           <button
-            onClick={openModal}
+            onClick={() => openModal()}
             className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-12 rounded-full text-lg shadow-xl hover:shadow-2xl transition hover:-translate-y-1"
           >
             Inscrever-se Agora
