@@ -111,7 +111,7 @@ export function Investiment({ openModal, batches }: InvestimentProps) {
                   {formatCurrency(finalPrice)}
                 </p>
                 <p className="text-slate-500 text-xs mt-2 font-medium">
-                  à vista ou 2x de {formatCurrency(finalPrice / 2)}
+                  à vista ou 2x de {formatCurrency(batch.installmentPrice)}
                 </p>
               </div>
 
@@ -123,28 +123,18 @@ export function Investiment({ openModal, batches }: InvestimentProps) {
 
               {/* Lista de Benefícios */}
               <ul className="space-y-4 mb-8 flex-1">
-                <li className="flex gap-3 text-sm text-slate-600">
-                  <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
-                  <span>24 horas de conteúdo prático</span>
-                </li>
-                <li className="flex gap-3 text-sm text-slate-600">
-                  <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
-                  <span>Certificado reconhecido INEFOR</span>
-                </li>
-                <li className="flex gap-3 text-sm text-slate-600">
-                  <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
-                  <span>Material didático incluso</span>
-                </li>
-                {/* {isFeatured && (
-                             <li className="flex gap-3 text-sm text-slate-600 font-medium">
-                                <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
-                                <span>Mentoria de Carreira Exclusiva</span>
-                            </li>
-                        )} */}
-                <li className="flex gap-3 text-sm text-slate-600">
-                  <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
-                  <span>Aulas 100% Presenciais</span>
-                </li>
+                {[
+                  '40 horas de conteúdo prático',
+                  'Certificado reconhecido INEFOR',
+                  'Material didático incluso',
+                  'Suporte pós-curso',
+                  'Aulas 100% Presenciais',
+                ].map((benefit) => (
+                  <li key={benefit} className="flex gap-3 text-sm text-slate-600">
+                    <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
+                    <span>{benefit}</span>
+                  </li>
+                ))}
               </ul>
 
               {/* Barra de Vagas e Footer */}

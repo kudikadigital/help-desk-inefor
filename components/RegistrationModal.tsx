@@ -3,11 +3,19 @@
 import { useState, useEffect } from 'react'
 import { X, CheckCircle, ArrowRight, Loader2, AlertCircle, CreditCard, Landmark, Copy, Check } from 'lucide-react'
 
+// Interface completa baseada no modelo Batch da BD
 interface Batch {
   id: string
   name: string
+  order: number
   price: number
   discount: number
+  installmentPrice: number  // Já vem da BD, não precisa calcular
+  slots: number
+  isActive: boolean
+  isFeatured: boolean
+  createdAt: Date
+  updatedAt: Date
 }
 
 interface RegistrationModalProps {
@@ -17,7 +25,7 @@ interface RegistrationModalProps {
 }
 
 type PaymentMethod = 'GPO' | 'REF'
-type PaymentType = 'FULL' | 'INSTALLMENT' // Novo: Para controlar o parcelamento
+type PaymentType = 'FULL' | 'INSTALLMENT'
 type Step = 1 | 2 | 'success_gpo' | 'success_ref'
 
 interface RefData {
@@ -32,25 +40,58 @@ export default function RegistrationModal({ isOpen, onClose, selectedBatch }: Re
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [method, setMethod] = useState<PaymentMethod>('GPO')
-  const [paymentType, setPaymentType] = useState<PaymentType>('FULL') // Estado inicial: Total
+  const [paymentType, setPaymentType] = useState<PaymentType>('FULL')
   const [copied, setCopied] = useState<string | null>(null)
   const [refData, setRefData] = useState<RefData | null>(null)
+  const [txId, setTxId] = useState<string | null>(null)
+  const [refPaid, setRefPaid] = useState(false)
 
   const [formData, setFormData] = useState({ name: '', email: '', phone: '' })
   const [phoneNumber, setPhoneNumber] = useState('')
 
+  // Polling: verificar se REF foi paga a cada 10s
+  useEffect(() => {
+    if (step !== 'success_ref' || !txId || refPaid) return
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/payments/status?txId=${txId}`)
+        const data = await res.json()
+        if (data.status === 'paid') {
+          setRefPaid(true)
+          clearInterval(interval)
+        }
+      } catch {
+        // silently ignore polling errors
+      }
+    }, 10000)
+
+    return () => clearInterval(interval)
+  }, [step, txId, refPaid])
+
   // --- Lógica de Preços ---
+  // Usa o price e discount do Batch para calcular o valor com desconto
   const fullPrice = selectedBatch
     ? Math.round(selectedBatch.price * (1 - selectedBatch.discount / 100))
     : 0
   
-  const installmentPrice = Math.round(fullPrice / 2)
+  // Usa o installmentPrice vindo diretamente da BD (já está pré-calculado)
+  // IMPORTANTE: O installmentPrice já deve vir da BD com o valor correto da parcela
+  const installmentPriceFromDb = selectedBatch?.installmentPrice || Math.round(fullPrice / 2)
   
   // Valor que será enviado para a API
-  const finalAmount = paymentType === 'FULL' ? fullPrice : installmentPrice
+  const finalAmount = paymentType === 'FULL' ? fullPrice : installmentPriceFromDb
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat('pt-AO').format(value) + ' Kz'
+
+  // Informações adicionais do batch para exibição
+  const slotsAvailable = selectedBatch?.slots 
+    ? `Vagas: ${selectedBatch.slots}` 
+    : 'Vagas limitadas'
+  
+  const isFeatured = selectedBatch?.isFeatured || false
+  const batchStatus = selectedBatch?.isActive ? 'Ativo' : 'Encerrado'
 
   useEffect(() => {
     if (!isOpen) {
@@ -61,6 +102,8 @@ export default function RegistrationModal({ isOpen, onClose, selectedBatch }: Re
         setMethod('GPO')
         setPaymentType('FULL')
         setRefData(null)
+        setTxId(null)
+        setRefPaid(false)
         setPhoneNumber('')
         setFormData({ name: '', email: '', phone: '' })
         setCopied(null)
@@ -148,6 +191,8 @@ export default function RegistrationModal({ isOpen, onClose, selectedBatch }: Re
           expiry: data.referenceExpiry,
           amount: finalAmount,
         })
+        setTxId(data.merchantTransactionId || null)
+        setRefPaid(false)
         setStep('success_ref')
       }
     } catch {
@@ -226,10 +271,18 @@ export default function RegistrationModal({ isOpen, onClose, selectedBatch }: Re
 
             {selectedBatch && (
               <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6">
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex justify-between items-start mb-4">
                   <div>
                     <p className="text-xs text-blue-600 font-semibold uppercase tracking-wide mb-0.5">Lote seleccionado</p>
                     <p className="font-bold text-slate-800">{selectedBatch.name}</p>
+                    {isFeatured && (
+                      <span className="inline-block mt-1 text-[10px] font-bold bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
+                        Destaque
+                      </span>
+                    )}
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      {slotsAvailable} • {batchStatus}
+                    </p>
                   </div>
                   <p className="text-2xl font-extrabold text-orange-500">{formatCurrency(finalAmount)}</p>
                 </div>
@@ -257,7 +310,7 @@ export default function RegistrationModal({ isOpen, onClose, selectedBatch }: Re
                       : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300'
                     }`}
                   >
-                    Parcelado (2x {formatCurrency(installmentPrice)})
+                    Parcelado (2x {formatCurrency(installmentPriceFromDb)})
                   </button>
                 </div>
                 {paymentType === 'INSTALLMENT' && (
@@ -298,7 +351,7 @@ export default function RegistrationModal({ isOpen, onClose, selectedBatch }: Re
 
             {method === 'REF' && (
               <p className="text-xs text-slate-500 bg-slate-50 rounded-lg p-3 mb-6 border border-slate-100 leading-relaxed">
-                Ao clicar em `&quot;`Gerar Referência`&quot;`, receberá os dados bancários para pagar via ATM ou Homebanking.
+                Ao clicar em `&quot;Gerar Referência`&quot;, receberá os dados bancários para pagar via ATM ou Homebanking.
               </p>
             )}
 
@@ -337,42 +390,65 @@ export default function RegistrationModal({ isOpen, onClose, selectedBatch }: Re
         {/* SUCCESS REF */}
         {step === 'success_ref' && (
           <div className="px-8 pb-8">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Landmark className="w-8 h-8 text-blue-600" />
+            {refPaid ? (
+              <div className="text-center py-4">
+                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <CheckCircle className="w-10 h-10 text-green-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-slate-800 mb-3">Pagamento Confirmado!</h3>
+                <p className="text-slate-500 mb-8 leading-relaxed">
+                  A referência bancária foi paga com sucesso.<br />
+                  A nossa equipa irá contactá-lo em breve para confirmar a matrícula.
+                </p>
+                <button onClick={onClose} className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-10 rounded-full transition">
+                  Concluir
+                </button>
               </div>
-              <h3 className="text-xl font-bold text-slate-800 mb-1">Referência Gerada</h3>
-              <p className="text-slate-500 text-sm">Pague agora para garantir o seu lugar no curso.</p>
-            </div>
-
-            {refData && (
-              <div className="bg-slate-50 border border-slate-200 rounded-xl divide-y divide-slate-100 mb-6">
-                {[
-                  { label: 'Entidade', value: refData.entity, key: 'entity' },
-                  { label: 'Referência', value: refData.reference, key: 'ref' },
-                  { label: 'Valor', value: formatCurrency(refData.amount), key: 'amount' },
-                  { label: 'Validade', value: new Date(refData.expiry).toLocaleDateString('pt-AO'), key: 'expiry' },
-                ].map(({ label, value, key }) => (
-                  <div key={key} className="flex items-center justify-between px-4 py-3">
-                    <span className="text-sm text-slate-500">{label}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-800 text-sm">{value}</span>
-                      {(key === 'entity' || key === 'ref') && (
-                        <button type="button" onClick={() => copyToClipboard(value, key)}
-                          className="text-slate-400 hover:text-orange-500 transition">
-                          {copied === key ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                        </button>
-                      )}
-                    </div>
+            ) : (
+              <>
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Landmark className="w-8 h-8 text-blue-600" />
                   </div>
-                ))}
-              </div>
-            )}
+                  <h3 className="text-xl font-bold text-slate-800 mb-1">Referência Gerada</h3>
+                  <p className="text-slate-500 text-sm">Pague agora para garantir o seu lugar no curso.</p>
+                </div>
 
-            <p className="text-xs text-slate-400 text-center mb-6">Os dados foram enviados para o seu e-mail.</p>
-            <button onClick={onClose} className="w-full py-3 border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-xl transition">
-              Fechar
-            </button>
+                {refData && (
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl divide-y divide-slate-100 mb-4">
+                    {[
+                      { label: 'Entidade', value: refData.entity, key: 'entity' },
+                      { label: 'Referência', value: refData.reference, key: 'ref' },
+                      { label: 'Valor', value: formatCurrency(refData.amount), key: 'amount' },
+                      { label: 'Validade', value: new Date(refData.expiry).toLocaleDateString('pt-AO'), key: 'expiry' },
+                    ].map(({ label, value, key }) => (
+                      <div key={key} className="flex items-center justify-between px-4 py-3">
+                        <span className="text-sm text-slate-500">{label}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-slate-800 text-sm">{value}</span>
+                          {(key === 'entity' || key === 'ref') && (
+                            <button type="button" onClick={() => copyToClipboard(value, key)}
+                              className="text-slate-400 hover:text-orange-500 transition">
+                              {copied === key ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex items-center justify-center gap-2 text-xs text-slate-400 mb-5">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  A aguardar confirmação de pagamento…
+                </div>
+
+                <p className="text-xs text-slate-400 text-center mb-4">Os dados foram enviados para o seu e-mail.</p>
+                <button onClick={onClose} className="w-full py-3 border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-xl transition">
+                  Fechar
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>

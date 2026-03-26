@@ -36,6 +36,7 @@ async function main() {
       name: 'Lote 3 (Final)',
       price: 175000,
       discount: 20,
+      installmentPrice: 72500,
       slots: 100,
       order: 3,
       isFeatured: false,
@@ -45,6 +46,7 @@ async function main() {
       name: 'Lote 2 (Intermédio)',
       price: 175000,
       discount: 40,
+      installmentPrice: 55000,
       slots: 50,
       order: 2,
       isFeatured: false,
@@ -54,7 +56,8 @@ async function main() {
       name: 'Lote 1 (VIP)',
       price: 175000,
       discount: 50,
-      slots: 87,
+      installmentPrice: 45000,
+      slots: 40,
       order: 1,
       isFeatured: true,
     },
@@ -63,7 +66,12 @@ async function main() {
   for (const batch of batches) {
     await prisma.batch.upsert({
       where: { id: batch.id },
-      update: {}, // Não faz nada se já existir
+      update: {
+        price: batch.price,
+        discount: batch.discount,
+        installmentPrice: batch.installmentPrice,
+        slots: batch.slots,
+      },
       create: batch,
     })
   }

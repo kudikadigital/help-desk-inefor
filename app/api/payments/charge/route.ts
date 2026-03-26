@@ -115,6 +115,7 @@ export async function POST(request: NextRequest) {
         referenceNumber: responseStatus.reference?.referenceNumber,
         referenceEntity: responseStatus.reference?.entity,
         referenceExpiry: responseStatus.reference?.dueDate,
+        merchantTransactionId,
       }),
     });
 

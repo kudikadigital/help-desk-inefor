@@ -3,13 +3,14 @@
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 
-export async function updateBatch(id: string, data: { price: number; discount: number; slots: number }) {
+export async function updateBatch(id: string, data: { price: number; discount: number; installmentPrice: number; slots: number }) {
   try {
     await prisma.batch.update({
       where: { id },
       data: {
         price: data.price,
         discount: data.discount,
+        installmentPrice: data.installmentPrice,
         slots: data.slots
       }
     })
